@@ -1,10 +1,11 @@
 import numpy as np
 import pygame as pg
+
 from pendulum import Pendulum
 
 
 def update_accelerations(Pendulum1, Pendulum2):
-    g = 1
+    g = 0.8
     num1_1 = -g * (2 * Pendulum1.m + Pendulum2.m) * np.sin(Pendulum1.a)
     num1_2 = -Pendulum2.m * g * np.sin(Pendulum1.a - 2 * Pendulum2.a)
     num1_3 = -2 * np.sin(Pendulum1.a - Pendulum2.a) * Pendulum2.m
@@ -21,10 +22,9 @@ def update_accelerations(Pendulum1, Pendulum2):
     Pendulum2.aa = (num2_1 * num2_2) / den
 
 
-def game_loop(Pendulum1, Pendulum2, size, screen_colour, y_offset, fps):
-    middle = size[0] / 2
+def game_loop(Pendulum1, Pendulum2, size, screen_colour, y_offset, fps, trail_point_size=1):
     pg.init()
-    screen = pg.display.set_mode(size)
+    screen = pg.display.set_mode(size, pg.RESIZABLE)
     background = pg.Surface(size, pg.SRCALPHA, 32)
     background = background.convert_alpha()
     running = True
@@ -32,10 +32,16 @@ def game_loop(Pendulum1, Pendulum2, size, screen_colour, y_offset, fps):
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 running = False
-        screen.fill(screen_colour)
+            if event.type == pg.KEYDOWN:
+                if event.key == pg.K_ESCAPE:
+                    running = False
 
+        screen.fill(screen_colour)
+        w, h = pg.display.get_surface().get_size()
+        middle = w / 2
+        background = pg.transform.scale(background, (w, h))
         pg.draw.circle(background, Pendulum2.col,
-                       (Pendulum1.x + Pendulum2.x + middle, Pendulum1.y + Pendulum2.y + y_offset), 2)
+                       (Pendulum1.x + Pendulum2.x + middle, Pendulum1.y + Pendulum2.y + y_offset), trail_point_size)
 
         pg.draw.line(screen, Pendulum1.col, (middle, y_offset), (Pendulum1.x + middle, Pendulum1.y + y_offset))
         pg.draw.circle(screen, Pendulum1.col, (Pendulum1.x + middle, Pendulum1.y + y_offset), Pendulum1.m)
@@ -44,8 +50,6 @@ def game_loop(Pendulum1, Pendulum2, size, screen_colour, y_offset, fps):
                      (Pendulum1.x + Pendulum2.x + middle, Pendulum1.y + Pendulum2.y + y_offset))
         pg.draw.circle(screen, Pendulum2.col,
                        (Pendulum1.x + Pendulum2.x + middle, Pendulum1.y + Pendulum2.y + y_offset), Pendulum2.m)
-
-
 
         update_accelerations(Pendulum1, Pendulum2)
 
@@ -76,7 +80,7 @@ def main():
     size = (800, 600)
     screen_colour = (20, 20, 20)
     y_offset = 210
-    fps = 31
+    fps = 60
 
     game_loop(Pendulum1, Pendulum2, size, screen_colour, y_offset, fps)
 
