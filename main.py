@@ -1,9 +1,8 @@
 import math
-
 import numpy as np
 import pygame as pg
-
 from pendulum import Pendulum
+from functions import truncate
 
 
 def update_accelerations(pendulum1, pendulum2, g):
@@ -23,8 +22,8 @@ def update_accelerations(pendulum1, pendulum2, g):
         pendulum1.a, dtype=np.float64) + pendulum2.av ** 2 * pendulum2.r * pendulum2.m * np.cos(
         pendulum1.a - pendulum2.a, dtype=np.float64)
 
-    pendulum1.aa = num1 / den
-    pendulum2.aa = (num2_1 * num2_2) / den
+    pendulum1.aa = float(truncate(num1 / den, 5))
+    pendulum2.aa = float(truncate((num2_1 * num2_2) / den, 5))
     if abs(pendulum1.aa) > two_pi:
         pendulum1.aa %= two_pi
     if abs(pendulum2.aa) > two_pi:
@@ -45,10 +44,12 @@ def game_loop(pendulum1, pendulum2, size, screen_colour, y_offset, fps, g=1, tra
                 if event.key == pg.K_ESCAPE:
                     running = False
 
-        screen.fill(screen_colour)
         w, h = pg.display.get_surface().get_size()
+        screen.fill(screen_colour)
+
         middle = w / 2
-        background = pg.transform.scale(background, (w, h))
+        # background = pg.transform.scale(background, (w, h))
+
         pg.draw.circle(background, pendulum2.col,
                        (pendulum1.x + pendulum2.x + middle, pendulum1.y + pendulum2.y + y_offset), trail_point_size)
 
@@ -75,7 +76,7 @@ def game_loop(pendulum1, pendulum2, size, screen_colour, y_offset, fps, g=1, tra
         pg.time.wait(1000 // fps)
         screen.blit(background, (0, 0))
         pg.display.flip()
-        screen.blit(background, (0, 0))
+
     pg.quit()
 
 
@@ -91,7 +92,7 @@ def main():
     x, y = 800, 600
     size = (x, y)
     screen_colour = (34, 34, 34)
-    y_offset = (y-r1)/2
+    y_offset = (y-r1/2)/2
     fps = 40
 
     game_loop(pendulum1, pendulum2, size, screen_colour, y_offset, fps, g=1)
